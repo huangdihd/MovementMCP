@@ -1,6 +1,4 @@
 name: MovementMCP
-main: xin.claw.mcp.MovementMovementMcpPlugin
+main: movementmcp.MovementMcpPlugin
 version: ${project.version}
 type: PLUGIN
-depend:
-  - XinClaw
