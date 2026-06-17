@@ -55,9 +55,14 @@ public class MovementMcpServer {
                         p.addLast(new McpHttpHandler());
                     }
                 });
-        serverChannel = b.bind(port).sync().channel();
-        running.set(true);
-        logger.info("[MovementMCP] SSE server listening on http://0.0.0.0:{}", port);
+        serverChannel = b.bind(port).addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                running.set(true);
+                logger.info("[MovementMCP] SSE server listening on http://0.0.0.0:{}", port);
+            } else {
+                logger.error("[MovementMCP] Failed to bind port {}", port, future.cause());
+            }
+        }).channel();
     }
 
     public void stop() {
