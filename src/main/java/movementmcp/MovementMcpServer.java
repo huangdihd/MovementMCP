@@ -131,10 +131,10 @@ public class MovementMcpServer {
             String uri = req.uri();
             String path = uri.contains("?") ? uri.substring(0, uri.indexOf('?')) : uri;
 
-            if ("GET".equalsIgnoreCase(req.method().name()) && "/sse".equals(path)) {
+            if ("GET".equalsIgnoreCase(req.method().name()) && ("/sse".equals(path) || "/".equals(path))) {
                 handleSse(ctx, req);
-            } else if ("POST".equalsIgnoreCase(req.method().name()) && path.startsWith("/message")) {
-                handleMessage(ctx, req);
+            } else if ("POST".equalsIgnoreCase(req.method().name())) {
+                handlePost(ctx, req);
             } else if ("OPTIONS".equalsIgnoreCase(req.method().name())) {
                 handleOptions(ctx);
             } else {
@@ -164,9 +164,8 @@ public class MovementMcpServer {
             }
 
             String body = req.content().toString(StandardCharsets.UTF_8);
-            logger.debug("[MovementMCP] Received message: {}", body);
+            logger.debug("[MovementMCP] Received SSE message: {}", body);
 
-            // Send 202 Accepted
             DefaultFullHttpResponse ack = new DefaultFullHttpResponse(
                     HttpVersion.HTTP_1_1, HttpResponseStatus.ACCEPTED);
             ack.headers().set(HttpHeaderNames.CONTENT_LENGTH, 0);
@@ -178,8 +177,32 @@ public class MovementMcpServer {
                 conn = sseConnections.get(sseConnections.size() - 1);
             }
             if (conn != null) {
-                processJsonRpc(body, conn);
+                JsonObject result = processRpc(body);
+                if (result != null) conn.sendJsonRpc(gson.toJson(result));
             }
+        }
+
+        private void handlePost(ChannelHandlerContext ctx, FullHttpRequest req) {
+            String uri = req.uri();
+            String path = uri.contains("?") ? uri.substring(0, uri.indexOf('?')) : uri;
+            String body = req.content().toString(StandardCharsets.UTF_8);
+
+            if (path.startsWith("/message")) {
+                handleMessage(ctx, req);
+                return;
+            }
+
+            // Streamable HTTP: return JSON-RPC response directly
+            logger.debug("[MovementMCP] Streamable HTTP: {}", body);
+            JsonObject result = processRpc(body);
+            String responseJson = result != null ? gson.toJson(result) : "";
+            ByteBuf buf = Unpooled.copiedBuffer(responseJson, StandardCharsets.UTF_8);
+            DefaultFullHttpResponse httpResp = new DefaultFullHttpResponse(
+                    HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buf);
+            httpResp.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+            httpResp.headers().set(HttpHeaderNames.CONTENT_LENGTH, buf.readableBytes());
+            httpResp.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+            ctx.writeAndFlush(httpResp);
         }
 
         private void handleOptions(ChannelHandlerContext ctx) {
@@ -209,93 +232,80 @@ public class MovementMcpServer {
         }
     }
 
-    private void processJsonRpc(String body, SseConnection conn) {
+    // ==================== JSON-RPC Processing ====================
+
+    private JsonObject processRpc(String body) {
         JsonObject request;
         try {
             request = JsonParser.parseString(body).getAsJsonObject();
         } catch (Exception e) {
-            logger.error("[MovementMCP] Invalid JSON-RPC", e);
-            return;
+            return errorJson(null, -32700, "Parse error");
         }
 
         String method = request.has("method") ? request.get("method").getAsString() : null;
         JsonElement idElement = request.has("id") ? request.get("id") : null;
         JsonElement params = request.has("params") ? request.get("params") : null;
 
-        if (method == null) return;
-        boolean isNotification = idElement == null;
+        if (method == null) return null; // notification
 
         logger.info("[MovementMCP] Method: {}", method);
 
+        JsonObject result;
         switch (method) {
             case "initialize" -> {
-                JsonObject result = new JsonObject();
+                result = new JsonObject();
                 result.addProperty("protocolVersion", "2024-11-05");
                 JsonObject capabilities = new JsonObject();
                 capabilities.add("tools", new JsonObject());
                 result.add("capabilities", capabilities);
                 JsonObject serverInfo = new JsonObject();
-                serverInfo.addProperty("name", "XinMCP");
+                serverInfo.addProperty("name", "MovementMCP");
                 serverInfo.addProperty("version", "1.0.0");
                 result.add("serverInfo", serverInfo);
-                sendResponse(conn, idElement, result);
             }
-            case "notifications/initialized" -> {}
+            case "notifications/initialized" -> { return null; }
             case "tools/list" -> {
-                JsonObject result = new JsonObject();
+                result = new JsonObject();
                 result.add("tools", toolBridge.listTools());
-                sendResponse(conn, idElement, result);
             }
             case "tools/call" -> {
                 String toolName = params != null && params.getAsJsonObject().has("name")
                         ? params.getAsJsonObject().get("name").getAsString() : null;
                 JsonObject arguments = params != null && params.getAsJsonObject().has("arguments")
                         ? params.getAsJsonObject().get("arguments").getAsJsonObject() : new JsonObject();
-
-                if (toolName == null) {
-                    sendError(conn, idElement, -32602, "Missing tool name");
-                    return;
-                }
+                if (toolName == null) return errorJson(idElement, -32602, "Missing tool name");
                 try {
                     String resultText = toolBridge.callTool(toolName, arguments);
-                    JsonObject result = new JsonObject();
+                    result = new JsonObject();
                     JsonArray content = new JsonArray();
-                    JsonObject textContent = new JsonObject();
-                    textContent.addProperty("type", "text");
-                    textContent.addProperty("text", resultText);
-                    content.add(textContent);
+                    JsonObject tc = new JsonObject();
+                    tc.addProperty("type", "text");
+                    tc.addProperty("text", resultText);
+                    content.add(tc);
                     result.add("content", content);
-                    sendResponse(conn, idElement, result);
                 } catch (Exception e) {
                     logger.error("[MovementMCP] Tool error: {}", toolName, e);
-                    JsonObject result = new JsonObject();
+                    result = new JsonObject();
                     JsonArray content = new JsonArray();
-                    JsonObject textContent = new JsonObject();
-                    textContent.addProperty("type", "text");
-                    textContent.addProperty("text", "Error: " + e.getMessage());
-                    content.add(textContent);
+                    JsonObject tc = new JsonObject();
+                    tc.addProperty("type", "text");
+                    tc.addProperty("text", "Error: " + e.getMessage());
+                    content.add(tc);
                     result.add("content", content);
                     result.addProperty("isError", true);
-                    sendResponse(conn, idElement, result);
                 }
             }
-            default -> {
-                if (!isNotification) {
-                    sendError(conn, idElement, -32601, "Method not found: " + method);
-                }
-            }
+            default -> { return errorJson(idElement, -32601, "Method not found: " + method); }
         }
-    }
 
-    private void sendResponse(SseConnection conn, JsonElement id, JsonObject result) {
         JsonObject response = new JsonObject();
         response.addProperty("jsonrpc", "2.0");
-        response.add("id", id);
+        response.add("id", idElement);
         response.add("result", result);
-        conn.sendJsonRpc(gson.toJson(response));
+        return response;
     }
 
-    private void sendError(SseConnection conn, JsonElement id, int code, String message) {
+    private JsonObject errorJson(JsonElement id, int code, String message) {
         JsonObject response = new JsonObject();
         response.addProperty("jsonrpc", "2.0");
         response.add("id", id);
@@ -303,6 +313,6 @@ public class MovementMcpServer {
         error.addProperty("code", code);
         error.addProperty("message", message);
         response.add("error", error);
-        conn.sendJsonRpc(gson.toJson(response));
+        return response;
     }
 }
