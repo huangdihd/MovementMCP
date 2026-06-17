@@ -37,13 +37,11 @@ public class MovementMcpServer {
 
     public MovementMcpServer(int port) {
         this.port = port;
-        logger.info("[MovementMCP] Server created with port {}", port);
     }
 
     public void start() {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
-        logger.info("[MovementMCP] Event loops created, binding...");
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)

@@ -38,13 +38,11 @@ public class MovementMcpPlugin implements Plugin {
 
     public void startServer() {
         if (mcpServer != null && mcpServer.isRunning()) {
-            logger.warn("[MovementMCP] Server is already running on port {}", port);
+            logger.warn("[MovementMCP] Server already running on port {}", port);
             return;
         }
         try {
-            logger.info("[MovementMCP] Creating server on port {}...", port);
             mcpServer = new MovementMcpServer(port);
-            logger.info("[MovementMCP] Sever created, starting...");
             mcpServer.start();
             logger.info("[MovementMCP] MCP Server started on port {}", port);
         } catch (Exception e) {
@@ -64,11 +62,6 @@ public class MovementMcpPlugin implements Plugin {
         return mcpServer != null && mcpServer.isRunning();
     }
 
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
+    public int getPort() { return port; }
+    public void setPort(int port) { this.port = port; }
 }
