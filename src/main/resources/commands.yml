@@ -1,0 +1,6 @@
+mcp:
+  executor: xin.claw.mcp.MovementMovementMcpCommandExecutor
+  description: "MCP Server 控制台指令"
+  usage: "mcp <start|stop|status|port <port>>"
+  aliases:
+    - mcp
