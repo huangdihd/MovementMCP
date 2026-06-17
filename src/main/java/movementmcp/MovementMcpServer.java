@@ -1,4 +1,4 @@
-package xin.claw.mcp;
+package movementmcp;
 
 import com.google.gson.*;
 import io.netty.bootstrap.ServerBootstrap;

@@ -1,4 +1,4 @@
-package xin.claw.mcp;
+package movementmcp;
 
 import xin.bbtt.mcbot.command.Command;
 import xin.bbtt.mcbot.command.CommandExecutor;

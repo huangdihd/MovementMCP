@@ -1,4 +1,4 @@
-package xin.claw.mcp;
+package movementmcp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
