@@ -1,9 +1,6 @@
 # MovementMCP
 
 Xinbot 插件，通过 MCP SSE 协议暴露工具，让 AI 客户端控制 Minecraft 机器人。
-
-与 XinClaw 无关，直接使用 MovementSync + Bot API。
-
 ## 安装
 
 ```bash
