@@ -23,7 +23,7 @@ mcp restart        # 重启
 
 ## MCP 连接
 
-SSE endpoint: `http://localhost:3000/sse`
+SSE endpoint: `http://localhost:6735/sse`
 
 Claude Desktop 配置：
 
@@ -31,7 +31,7 @@ Claude Desktop 配置：
 {
   "mcpServers": {
     "movement": {
-      "url": "http://localhost:3000/sse"
+      "url": "http://localhost:6735/sse"
     }
   }
 }

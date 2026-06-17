@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "movementmcp": {
+      "type": "url",
+      "url": "http://localhost:6735/sse"
+    }
+  }
+}

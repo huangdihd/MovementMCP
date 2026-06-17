@@ -10,7 +10,7 @@ public class MovementMcpPlugin implements Plugin {
     public static MovementMcpPlugin INSTANCE;
 
     private MovementMcpServer mcpServer;
-    private int port = 3000;
+    private int port = 6735;
 
     @Override
     public void onLoad() {
