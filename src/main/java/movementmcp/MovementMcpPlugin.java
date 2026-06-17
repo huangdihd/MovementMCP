@@ -22,7 +22,7 @@ public class MovementMcpPlugin implements Plugin {
     public void onEnable() {
         logger.info("[MovementMCP] Enabling...");
         INSTANCE = this;
-        startServer();
+        new Thread(this::startServer, "mcp-start").start();
     }
 
     @Override
@@ -42,7 +42,9 @@ public class MovementMcpPlugin implements Plugin {
             return;
         }
         try {
+            logger.info("[MovementMCP] Creating server on port {}...", port);
             mcpServer = new MovementMcpServer(port);
+            logger.info("[MovementMCP] Sever created, starting...");
             mcpServer.start();
             logger.info("[MovementMCP] MCP Server started on port {}", port);
         } catch (Exception e) {

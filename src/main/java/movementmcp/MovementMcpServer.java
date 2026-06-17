@@ -37,11 +37,13 @@ public class MovementMcpServer {
 
     public MovementMcpServer(int port) {
         this.port = port;
+        logger.info("[MovementMCP] Server created with port {}", port);
     }
 
-    public void start() throws InterruptedException {
+    public void start() {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
+        logger.info("[MovementMCP] Event loops created, binding...");
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
@@ -55,14 +57,14 @@ public class MovementMcpServer {
                         p.addLast(new McpHttpHandler());
                     }
                 });
-        serverChannel = b.bind(port).addListener((ChannelFutureListener) future -> {
-            if (future.isSuccess()) {
-                running.set(true);
-                logger.info("[MovementMCP] SSE server listening on http://0.0.0.0:{}", port);
-            } else {
-                logger.error("[MovementMCP] Failed to bind port {}", port, future.cause());
-            }
-        }).channel();
+        try {
+            serverChannel = b.bind(port).sync().channel();
+            running.set(true);
+            logger.info("[MovementMCP] SSE server listening on http://0.0.0.0:{}", port);
+        } catch (InterruptedException e) {
+            logger.error("[MovementMCP] Bind interrupted", e);
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void stop() {

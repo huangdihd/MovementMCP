@@ -2,3 +2,5 @@ name: MovementMCP
 main: movementmcp.MovementMcpPlugin
 version: ${project.version}
 type: PLUGIN
+depend:
+  - MovementSync
