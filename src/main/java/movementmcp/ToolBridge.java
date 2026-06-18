@@ -21,6 +21,7 @@ public class ToolBridge {
             new movementmcp.tools.perception.WhereAmITool(), new movementmcp.tools.perception.ScanSurroundingsTool(),
             new movementmcp.tools.perception.GetAreaMapTool(), new movementmcp.tools.perception.GetNearbyEntitiesTool(),
             new movementmcp.tools.perception.GetBlocksInCubeTool(), new movementmcp.tools.perception.FindSpecificBlocksTool(),
+            new movementmcp.tools.perception.GetVitalsTool(),
 
             new movementmcp.tools.action.InteractEntityTool(), new movementmcp.tools.action.ChangeSlotTool(),
             new movementmcp.tools.action.UseItemTool(), new movementmcp.tools.action.UseItemWithDurationTool(),
@@ -29,8 +30,14 @@ public class ToolBridge {
 
             new movementmcp.tools.social.GetPlayerListTool(), new movementmcp.tools.social.GetNearbyPlayersTool(),
             new movementmcp.tools.social.FollowPlayerTool(), new movementmcp.tools.social.StopFollowingTool(),
+            new movementmcp.tools.social.GetBotOwnerTool(), new movementmcp.tools.social.GetRecentChatTool(),
+            new movementmcp.tools.social.GetPlayerNameByEntityIdTool(),
 
-            new movementmcp.tools.system.SendChatMessageTool(), new movementmcp.tools.system.SendCommandTool()
+            new movementmcp.tools.inventory.GetInventoryTool(), new movementmcp.tools.inventory.CloseContainerTool(),
+            new movementmcp.tools.inventory.ClickInventorySlotTool(),
+
+            new movementmcp.tools.system.SendChatMessageTool(), new movementmcp.tools.system.SendCommandTool(),
+            new movementmcp.tools.system.GetCommandCompletionsTool()
         );
         logger.info("[MovementMCP] Registered {} tools", toolMap.size());
     }
