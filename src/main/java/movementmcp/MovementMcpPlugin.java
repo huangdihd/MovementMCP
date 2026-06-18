@@ -23,6 +23,12 @@ public class MovementMcpPlugin implements Plugin {
         logger.info("[MovementMCP] Enabling...");
         INSTANCE = this;
         new Thread(this::startServer, "mcp-start").start();
+        try {
+            xin.bbtt.mcbot.Bot.INSTANCE.getPluginManager().events().registerEvents(new movementmcp.listeners.AgentWakeupListener(), this);
+            logger.info("[MovementMCP] Registered AgentWakeupListener for active agent wakeups.");
+        } catch (Exception e) {
+            logger.error("[MovementMCP] Failed to register AgentWakeupListener", e);
+        }
     }
 
     @Override
@@ -60,6 +66,30 @@ public class MovementMcpPlugin implements Plugin {
 
     public boolean isRunning() {
         return mcpServer != null && mcpServer.isRunning();
+    }
+
+    public void sendNotification(String method, com.google.gson.JsonObject params) {
+        if (mcpServer != null) {
+            mcpServer.broadcastNotification(method, params);
+        }
+    }
+
+    public void sendMcpMessage(String level, String loggerName, Object data) {
+        if (mcpServer != null) {
+            com.google.gson.JsonObject params = new com.google.gson.JsonObject();
+            params.addProperty("level", level);
+            if (loggerName != null) {
+                params.addProperty("logger", loggerName);
+            }
+            if (data instanceof com.google.gson.JsonElement) {
+                params.add("data", (com.google.gson.JsonElement) data);
+            } else if (data instanceof String) {
+                params.addProperty("data", (String) data);
+            } else if (data != null) {
+                params.addProperty("data", data.toString());
+            }
+            mcpServer.broadcastNotification("notifications/message", params);
+        }
     }
 
     public int getPort() { return port; }

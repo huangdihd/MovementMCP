@@ -81,6 +81,20 @@ public class MovementMcpServer {
         return running.get();
     }
 
+    public void broadcastNotification(String method, JsonObject params) {
+        if (!running.get()) return;
+        JsonObject notification = new JsonObject();
+        notification.addProperty("jsonrpc", "2.0");
+        notification.addProperty("method", method);
+        if (params != null) {
+            notification.add("params", params);
+        }
+        String json = gson.toJson(notification);
+        for (SseConnection conn : sseConnections) {
+            conn.sendJsonRpc(json);
+        }
+    }
+
     private static class SseConnection {
         final ChannelHandlerContext ctx;
         final String sessionId;
