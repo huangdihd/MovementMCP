@@ -30,7 +30,7 @@ public class GetNearbyEntitiesTool implements McpTool {
             StringBuilder sb = new StringBuilder(String.format("Found %d entities:\n", nearby.size()));
             for (int i = 0; i < Math.min(nearby.size(), 40); i++) {
                 Entity e = nearby.get(i);
-                sb.append(String.format("  [%s] ID:%d dist:%.1f\n", e.getType().name(), e.getEntityId(), cur.distance(e.getPosition())));
+                sb.append(String.format("  [%s] ID:%d dist:%.1f pos:(%.1f,%.1f,%.1f)\n", e.getType().name(), e.getEntityId(), cur.distance(e.getPosition()), e.getPosition().x, e.getPosition().y, e.getPosition().z));
             }
             return sb.toString();
         } catch (Exception e) { return "Error: " + e.getMessage(); }

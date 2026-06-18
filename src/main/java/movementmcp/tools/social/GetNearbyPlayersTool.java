@@ -28,7 +28,7 @@ public class GetNearbyPlayersTool implements McpTool {
                     double d = cur.distance(e.getPosition()); if (d <= radius) {
                         String name = "Unknown";
                         if (Bot.INSTANCE.players != null) { var p = Bot.INSTANCE.players.get(e.getUuid()); if (p != null) name = p.getName(); }
-                        sb.append(String.format("  %s dist:%.1f ID:%d\n", name, d, e.getEntityId())); count++;
+                        sb.append(String.format("  %s dist:%.1f ID:%d pos:(%.1f,%.1f,%.1f)\n", name, d, e.getEntityId(), e.getPosition().x, e.getPosition().y, e.getPosition().z)); count++;
                     }
                 }
             }

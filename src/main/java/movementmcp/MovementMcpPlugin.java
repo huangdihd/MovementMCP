@@ -25,9 +25,10 @@ public class MovementMcpPlugin implements Plugin {
         new Thread(this::startServer, "mcp-start").start();
         try {
             xin.bbtt.mcbot.Bot.INSTANCE.getPluginManager().events().registerEvents(new movementmcp.listeners.AgentWakeupListener(), this);
-            logger.info("[MovementMCP] Registered AgentWakeupListener for active agent wakeups.");
+            xin.bbtt.mcbot.Bot.INSTANCE.getPluginManager().events().registerEvents(new movementmcp.trackers.DimensionTracker(), this);
+            logger.info("[MovementMCP] Registered AgentWakeupListener and DimensionTracker.");
         } catch (Exception e) {
-            logger.error("[MovementMCP] Failed to register AgentWakeupListener", e);
+            logger.error("[MovementMCP] Failed to register listeners", e);
         }
     }
 

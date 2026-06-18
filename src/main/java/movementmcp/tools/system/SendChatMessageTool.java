@@ -13,6 +13,9 @@ public class SendChatMessageTool implements McpTool {
     public String execute(JsonObject args) {
         String msg = args.get("message").getAsString();
         if (Bot.INSTANCE == null) return "Bot not ready.";
+        if (msg.matches(".*?-?\\d{2,}[\\s,]+-?\\d{1,}[\\s,]+-?\\d{2,}.*")) {
+            return "Blocked: message contains suspected coordinates. Do not leak coordinates!";
+        }
         sendInChunks(msg);
         return "Message sent.";
     }

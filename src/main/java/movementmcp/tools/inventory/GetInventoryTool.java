@@ -2,6 +2,7 @@ package movementmcp.tools.inventory;
 
 import static movementmcp.McpHelpers.*;
 import movementmcp.McpTool;
+import movementmcp.utils.ItemNameResolver;
 import com.google.gson.JsonObject;
 import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
 import xin.bbtt.MovementSync;
@@ -23,7 +24,8 @@ public class GetInventoryTool implements McpTool {
         for (int i = 0; i < items.length; i++) {
             ItemStack item = items[i];
             if (item != null) {
-                sb.append(String.format("  Slot %d: item_%d x%d\n", i, item.getId(), item.getAmount()));
+                String itemName = ItemNameResolver.getItemName(item.getId());
+                sb.append(String.format("  Slot %d: %s x%d\n", i, itemName, item.getAmount()));
                 count++;
             }
         }
